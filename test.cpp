@@ -99,14 +99,14 @@ void test_tuple() {
         assert(get<1>(v[1]) == std::string("bar"));
         assert(get<1>(v[2]) == std::string("baz"));
     }
-    /**
+
     {
         auto tuple = makeTuple(1, "hello");
         auto test_tuple = tupleCat(tuple, tuple, makeTuple(5, 10));
 
         assert(get<0>(test_tuple) == get<2>(test_tuple));
         assert(get<4>(test_tuple) == 5);
-    }**/
+    }
 
 
     for (int i = 0; i < 10000; ++i) {
@@ -119,7 +119,8 @@ void test_tuple() {
 int main() {
     test_tuple();
 
-    Tuple<int, std::string> t = makeTuple(1, "hi");
+    Tuple<int> t = makeTuple(1);
+    Tuple<int> tt = Tuple<int>(tt);
 
 
     std::cout << 0;

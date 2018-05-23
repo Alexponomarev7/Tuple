@@ -15,10 +15,12 @@ public:
 
 template<typename First, typename... T_other>
 class Tuple<First, T_other...> : public  Tuple<T_other...> {
-private:
+public:
     using value_type = First;
     using value_reference = First&;
 
+    using next_type = Tuple<T_other...>;
+private:
     value_type _value;
 public:
     constexpr Tuple() : _value(), Tuple<T_other...>() {}
@@ -193,24 +195,39 @@ namespace Tuple_Traits {
         using type = T&;
     };
 
-    template <class T>
-    struct make_tuple_return
-    {
-        using type = typename make_tuple_return_impl<typename std::decay<T>::type>::type;
+    template<typename T>
+    struct make_tuple_return {
+        using type = typename make_tuple_return_impl<std::decay_t<T> >::type;
     };
 
-    /** template<typename... F_other, typename... S_other>
+    template<typename F_other, typename S_other>
+    struct mergeTupleTypes {
+        using type = void;
+    };
+
+    template<typename... F_other, typename... S_other>
     struct mergeTupleTypes<Tuple<F_other...>, Tuple<S_other...>> {
         using type = Tuple<F_other..., S_other...>;
     };
 
     template<typename First, typename Second>
-    Tuple<typename mergeTupleTypes<First, Second>::type>mergeTuple(First&& f, Second&& s) {
-        Tuple<typename  mergeTupleTypes<First, Second>> result();
-        size_t pos = 0;
-        for (int i )
-        return makeTuple(f, f_other, s, s_other);
-    }  **/
+    auto mergeTwoTuples(First&& first, Second&& other,
+                   typename std::enable_if_t<(std::decay_t<First>::size() == 1)>* = 0) {
+        typename mergeTupleTypes<std::decay_t<First>, std::decay_t<Second>>::type result;
+        result.get() = std::forward<typename std::remove_reference_t<First>::value_type>(first.get());
+        result.next() = std::forward<Second>(other);
+        return result;
+    }
+
+    template<typename First, typename Second, typename = std::enable_if_t<(std::decay_t<First>::size() > 1)>>
+    constexpr auto mergeTwoTuples(First&& first, Second&& other) {
+        typename mergeTupleTypes<std::decay_t<First>, std::decay_t<Second>>::type result;
+        result.get() = std::forward<typename std::remove_reference_t<First>::value_type>(first.get());
+
+        using next_type = typename std::remove_reference_t<First>::next_type;
+        result.next() = mergeTwoTuples(std::forward<next_type>(first.next()), std::forward<Second>(other));
+        return result;
+    }
 }
 
 template<typename... S_other>
@@ -250,15 +267,15 @@ constexpr bool operator>=(const Tuple<F_first, F_other...>& first, const Tuple<S
 }
 
 // tupleCat
-/**template<typename First, typename Second, typename... Other>
+template<typename First, typename Second, typename... Other>
 constexpr decltype(auto) tupleCat(First&& first, Second&& second, Other&&... other) {
-    return Tuple_Traits::merge(std::forward<First>(first),
+    return Tuple_Traits::mergeTwoTuples(std::forward<First>(first),
             std::move(tupleCat(std::forward<Second>(second), std::forward<Other>(other)...)));
 }
 
-template<typename First, typename Tp2>
+template<typename First, typename Second>
 constexpr decltype(auto) tupleCat(First&& first, Second&& second) {
-    return Tuple_Traits::merge(std::forward<First>(first), std::forward<Second>(second));
-}**/
+    return Tuple_Traits::mergeTwoTuples(std::forward<First>(first), std::forward<Second>(second));
+}
 
 #endif //TUPLE_TUPLE_H
