@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/lexolordan/c++/Tuple/main.cpp
+iostream
+-
+tuple.h
+/Users/lexolordan/c++/Tuple/tuple.h
+
+/Users/lexolordan/c++/Tuple/tuple.h
+
